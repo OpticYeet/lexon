@@ -26,6 +26,7 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
+  const [saveAnimating, setSaveAnimating] = useState(false);
 
   const summary = paper.abstract ?? paper.aiSummary;
   const authorText =
@@ -39,9 +40,8 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
     setLikeCount((c) => (newLiked ? c + 1 : Math.max(0, c - 1)));
     if (newLiked) {
       setLikeAnimating(true);
-      setTimeout(() => setLikeAnimating(false), 600);
+      setTimeout(() => setLikeAnimating(false), 700);
     }
-
     await fetch(`/api/papers/${paper.id}/like`, {
       method: newLiked ? "POST" : "DELETE",
     }).catch(() => {});
@@ -50,6 +50,10 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
   const handleSave = async () => {
     const newSaved = !saved;
     setSaved(newSaved);
+    if (newSaved) {
+      setSaveAnimating(true);
+      setTimeout(() => setSaveAnimating(false), 500);
+    }
     await fetch(`/api/papers/${paper.id}/save`, {
       method: newSaved ? "POST" : "DELETE",
     }).catch(() => {});
@@ -57,10 +61,7 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
 
   const handleShare = async () => {
     if (navigator.share) {
-      await navigator.share({
-        title: paper.title,
-        url: paper.fullPaperUrl,
-      }).catch(() => {});
+      await navigator.share({ title: paper.title, url: paper.fullPaperUrl }).catch(() => {});
     } else {
       await navigator.clipboard.writeText(paper.fullPaperUrl);
     }
@@ -68,11 +69,11 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
 
   return (
     <>
-      <div className="h-screen w-full snap-start flex items-center justify-center relative px-6 md:px-12">
-        {/* Main content */}
-        <div className="max-w-lg w-full">
-          {/* Field badge + year */}
-          <div className="flex items-center gap-3 mb-4">
+      <div className="h-screen w-full snap-start flex items-center justify-center relative px-4 md:px-20">
+        {/* Card container */}
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-2xl shadow-lg max-w-xl w-full max-h-[80vh] overflow-y-auto p-6 md:p-8 relative">
+          {/* Field badge + meta */}
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
             {paper.field && (
               <Badge color={paper.field.color}>
                 {paper.field.name.split(" / ")[0]}
@@ -89,18 +90,18 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
           </div>
 
           {/* Title */}
-          <h1 className="font-serif text-2xl md:text-3xl font-bold leading-tight mb-4">
+          <h1 className="font-serif text-xl md:text-2xl font-bold leading-tight mb-3 break-words">
             {paper.title}
           </h1>
 
           {/* Authors */}
           {authorText && (
-            <p className="text-sm text-muted mb-6">{authorText}</p>
+            <p className="text-sm text-muted mb-5 break-words">{authorText}</p>
           )}
 
-          {/* Abstract / Summary */}
+          {/* Abstract */}
           {summary && (
-            <p className="text-base leading-relaxed text-ink/80 line-clamp-6 md:line-clamp-none">
+            <p className="text-sm md:text-base leading-relaxed text-ink/80 mb-6 break-words">
               {summary}
             </p>
           )}
@@ -110,7 +111,7 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
             href={paper.fullPaperUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-6 text-accent font-medium text-sm hover:underline"
+            className="inline-flex items-center gap-1.5 text-accent font-medium text-sm hover:underline"
           >
             Read full paper
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -119,15 +120,15 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
           </a>
         </div>
 
-        {/* Action bar — right side, vertical, like TikTok */}
-        <div className="absolute right-4 md:right-8 bottom-1/3 flex flex-col items-center gap-6">
+        {/* Action bar — right side */}
+        <div className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-5">
           {/* Like */}
-          <button onClick={handleLike} className="flex flex-col items-center gap-1">
+          <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
             <div
               className={cn(
-                "w-11 h-11 rounded-full flex items-center justify-center transition-all",
-                liked ? "bg-red-50" : "bg-ink/5 hover:bg-ink/10",
-                likeAnimating && "scale-125"
+                "w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300",
+                liked ? "bg-red-50 shadow-sm" : "bg-card/80 backdrop-blur-sm border border-border hover:bg-card",
+                likeAnimating && "animate-like-pop"
               )}
             >
               <svg
@@ -137,29 +138,28 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
                 fill={liked ? "#EF4444" : "none"}
                 stroke={liked ? "#EF4444" : "currentColor"}
                 strokeWidth="2"
-                className="transition-all"
+                className={cn("transition-all duration-300", likeAnimating && "scale-110")}
               >
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
               </svg>
             </div>
-            <span className="text-xs text-muted tabular-nums">
-              {likeCount > 0 ? likeCount : ""}
-            </span>
+            {likeCount > 0 && (
+              <span className="text-xs text-muted tabular-nums">{likeCount}</span>
+            )}
           </button>
 
           {/* Comment */}
           <button onClick={() => setShowComments(true)} className="flex flex-col items-center gap-1">
-            <div className="w-11 h-11 rounded-full bg-ink/5 hover:bg-ink/10 flex items-center justify-center transition-all">
+            <div className="w-11 h-11 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-card flex items-center justify-center transition-all duration-200 hover:scale-105">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
             </div>
-            <span className="text-xs text-muted"></span>
           </button>
 
           {/* Share */}
           <button onClick={handleShare} className="flex flex-col items-center gap-1">
-            <div className="w-11 h-11 rounded-full bg-ink/5 hover:bg-ink/10 flex items-center justify-center transition-all">
+            <div className="w-11 h-11 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-card flex items-center justify-center transition-all duration-200 hover:scale-105">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
               </svg>
@@ -170,8 +170,9 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
           <button onClick={handleSave} className="flex flex-col items-center gap-1">
             <div
               className={cn(
-                "w-11 h-11 rounded-full flex items-center justify-center transition-all",
-                saved ? "bg-accent/10" : "bg-ink/5 hover:bg-ink/10"
+                "w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300",
+                saved ? "bg-accent/10 border border-accent/30 shadow-sm" : "bg-card/80 backdrop-blur-sm border border-border hover:bg-card",
+                saveAnimating && "animate-save-bounce"
               )}
             >
               <svg
@@ -181,6 +182,7 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
                 fill={saved ? "var(--accent)" : "none"}
                 stroke={saved ? "var(--accent)" : "currentColor"}
                 strokeWidth="2"
+                className="transition-all duration-300"
               >
                 <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
               </svg>
@@ -188,15 +190,14 @@ export function SwipeCard({ paper, isActive }: SwipeCardProps) {
           </button>
         </div>
 
-        {/* Scroll hint at bottom */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40">
+        {/* Scroll hint */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-30 animate-bounce-slow">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 9l6 6 6-6" />
           </svg>
         </div>
       </div>
 
-      {/* Comments sheet */}
       {showComments && (
         <CommentSheet paperId={paper.id} onClose={() => setShowComments(false)} />
       )}

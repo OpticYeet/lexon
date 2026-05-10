@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { SwipeCard } from "@/components/feed/SwipeCard";
+import { ParticleBackground } from "@/components/feed/ParticleBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface FeedPaper {
@@ -24,7 +25,6 @@ export function SwipeFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initial load: daily feed
   useEffect(() => {
     async function load() {
       try {
@@ -35,7 +35,6 @@ export function SwipeFeed() {
         if (dailyPapers.length > 0) {
           setPapers(dailyPapers);
         } else {
-          // No daily feed (no interests?), load endless directly
           await loadEndless(null);
         }
       } catch (error) {
@@ -64,14 +63,12 @@ export function SwipeFeed() {
     }
   }, [loadingMore]);
 
-  // Load more when nearing end
   useEffect(() => {
     if (currentIndex >= papers.length - 3 && !loadingMore && papers.length > 0) {
       loadEndless(cursor);
     }
   }, [currentIndex, papers.length, cursor, loadEndless, loadingMore]);
 
-  // Mark as read when viewing
   useEffect(() => {
     if (papers[currentIndex]) {
       fetch("/api/interactions", {
@@ -82,7 +79,6 @@ export function SwipeFeed() {
     }
   }, [currentIndex, papers]);
 
-  // Handle scroll snap
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -118,28 +114,30 @@ export function SwipeFeed() {
   }
 
   return (
-    <div
-      ref={containerRef}
-      onScroll={handleScroll}
-      className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-      style={{ scrollBehavior: "smooth" }}
-    >
-      {papers.map((paper, index) => (
-        <SwipeCard
-          key={paper.id}
-          paper={paper}
-          isActive={index === currentIndex}
-        />
-      ))}
-      {loadingMore && (
-        <div className="h-screen snap-start flex items-center justify-center">
-          <div className="flex gap-1">
-            <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:0ms]" />
-            <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:150ms]" />
-            <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:300ms]" />
+    <div className="fixed inset-0">
+      <ParticleBackground />
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="absolute inset-0 overflow-y-scroll snap-y snap-mandatory scrollbar-hide z-10"
+      >
+        {papers.map((paper, index) => (
+          <SwipeCard
+            key={paper.id}
+            paper={paper}
+            isActive={index === currentIndex}
+          />
+        ))}
+        {loadingMore && (
+          <div className="h-screen snap-start flex items-center justify-center">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:0ms]" />
+              <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:150ms]" />
+              <div className="w-2 h-2 rounded-full bg-muted animate-bounce [animation-delay:300ms]" />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

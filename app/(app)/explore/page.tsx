@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { DailyFeed } from "@/components/feed/DailyFeed";
+import { SwipeFeed } from "@/components/feed/SwipeFeed";
 
-export default async function DashboardPage() {
+export default async function ExplorePage() {
   const { userId } = await auth();
   if (userId) {
     const [user] = await db
@@ -19,9 +19,5 @@ export default async function DashboardPage() {
     }
   }
 
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <DailyFeed />
-    </div>
-  );
+  return <SwipeFeed />;
 }

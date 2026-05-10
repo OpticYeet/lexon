@@ -3,7 +3,17 @@
 import { useEffect, useState } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+interface SavedPaper {
+  id: string;
+  title: string;
+  fullPaperUrl: string;
+  year: number | null;
+  field: { name: string; color: string } | null;
+  authors: { name: string }[];
+}
 
 const FIELDS = [
   { id: 1, name: "Biology", color: "#4A7C59" },
@@ -23,14 +33,19 @@ export default function ProfilePage() {
   const [interests, setInterests] = useState<number[]>([]);
   const [dailyGoal, setDailyGoal] = useState(3);
   const [saving, setSaving] = useState(false);
+  const [savedPapers, setSavedPapers] = useState<SavedPaper[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/users/interests").then((r) => r.json()),
       fetch("/api/users/me").then((r) => r.json()),
-    ]).then(([interestsData, userData]) => {
+      fetch("/api/users/saved").then((r) => r.json()),
+    ]).then(([interestsData, userData, saved]) => {
       setInterests(interestsData.map((i: any) => i.fieldId));
       setDailyGoal(userData.dailyGoal ?? 3);
+      setSavedPapers(saved.papers ?? []);
+      setLoadingSaved(false);
     });
   }, []);
 
@@ -111,6 +126,46 @@ export default function ProfilePage() {
       <Button onClick={save} disabled={saving || interests.length < 1}>
         {saving ? "Saving..." : "Save Changes"}
       </Button>
+
+      {/* Saved Papers */}
+      <div className="mt-12 border-t border-border pt-8">
+        <h2 className="font-serif text-xl font-bold mb-4">Saved Papers</h2>
+        {loadingSaved ? (
+          <p className="text-sm text-muted">Loading...</p>
+        ) : savedPapers.length === 0 ? (
+          <p className="text-sm text-muted">No saved papers yet. Bookmark papers from the feed to see them here.</p>
+        ) : (
+          <div className="space-y-3">
+            {savedPapers.map((paper) => (
+              <a
+                key={paper.id}
+                href={paper.fullPaperUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-4 rounded-xl border border-border hover:border-accent/30 hover:bg-card-hover transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-serif font-semibold text-sm leading-snug mb-1 line-clamp-2">
+                      {paper.title}
+                    </h3>
+                    <p className="text-xs text-muted truncate">
+                      {paper.authors.map((a) => a.name).slice(0, 3).join(", ")}
+                      {paper.authors.length > 3 && ` +${paper.authors.length - 3}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {paper.field && (
+                      <Badge color={paper.field.color}>{paper.field.name.split(" / ")[0]}</Badge>
+                    )}
+                    {paper.year && <span className="text-xs text-muted">{paper.year}</span>}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
