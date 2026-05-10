@@ -89,20 +89,31 @@ export function SwipeFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Shuffle themes deterministically so adjacent papers never share a palette
-  const shuffledThemes = useMemo(() => {
-    const order = THEMES.map((_, i) => i);
-    // Fisher-Yates with fixed seed for consistency within a session
-    let seed = 42;
-    const rng = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
+  // Build an infinite theme sequence: every 30 papers, reshuffle the palette
+  const themeSequenceRef = useRef<typeof THEMES[number][]>([]);
+
+  const getThemeForIndex = useCallback((index: number) => {
+    // Extend the sequence if needed
+    while (themeSequenceRef.current.length <= index) {
+      const shuffled = [...THEMES];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      // Ensure no repeat at the boundary with previous batch
+      if (themeSequenceRef.current.length > 0) {
+        const lastTheme = themeSequenceRef.current[themeSequenceRef.current.length - 1];
+        if (shuffled[0] === lastTheme) {
+          const swapIdx = 1 + Math.floor(Math.random() * (shuffled.length - 1));
+          [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
+        }
+      }
+      themeSequenceRef.current.push(...shuffled);
     }
-    return order.map((i) => THEMES[i]);
+    return themeSequenceRef.current[index];
   }, []);
 
-  const currentTheme = useMemo(() => shuffledThemes[currentIndex % shuffledThemes.length], [currentIndex, shuffledThemes]);
+  const currentTheme = useMemo(() => getThemeForIndex(currentIndex), [currentIndex, getThemeForIndex]);
 
   useEffect(() => {
     async function load() {
@@ -208,7 +219,7 @@ export function SwipeFeed() {
             key={paper.id}
             paper={paper}
             isActive={index === currentIndex}
-            theme={shuffledThemes[index % shuffledThemes.length]}
+            theme={getThemeForIndex(index)}
           />
         ))}
         {loadingMore && (
