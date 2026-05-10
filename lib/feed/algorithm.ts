@@ -52,7 +52,7 @@ export async function generateDailyFeed({ userId, dailyGoal, today }: FeedOption
     .where(
       and(
         inArray(papers.fieldId, fieldIds),
-        isNotNull(papers.aiSummary),
+        isNotNull(papers.abstract),
         excludeIds.length > 0
           ? notInArray(papers.id, excludeIds)
           : undefined
@@ -147,7 +147,7 @@ export async function getEndlessFeed({
     .where(
       and(
         inArray(papers.fieldId, fieldIds),
-        isNotNull(papers.aiSummary),
+        isNotNull(papers.abstract),
         excludeIds.length > 0 ? notInArray(papers.id, excludeIds) : undefined,
         cursor
           ? sql`(${papers.qualityScore}, ${papers.publishedAt}) < (${parseFloat(cursor.split("::")[0])}, ${cursor.split("::")[1]})`

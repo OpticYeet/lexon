@@ -105,24 +105,13 @@ export default function PaperDetailPage() {
         </p>
       )}
 
-      {paper.aiSummary && (
+      {paper.abstract && (
         <div className="bg-card border border-border rounded-xl p-6 mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted mb-3">
-            Summary
+            Abstract
           </h2>
-          <p className="text-base leading-relaxed">{paper.aiSummary}</p>
+          <p className="text-base leading-relaxed">{paper.abstract}</p>
         </div>
-      )}
-
-      {paper.abstract && (
-        <details className="mb-6 group">
-          <summary className="text-sm font-medium text-muted cursor-pointer hover:text-ink">
-            Full Abstract
-          </summary>
-          <p className="mt-3 text-sm leading-relaxed text-ink/80">
-            {paper.abstract}
-          </p>
-        </details>
       )}
 
       <div className="flex gap-3">

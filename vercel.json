@@ -1,7 +1,6 @@
 {
   "crons": [
     { "path": "/api/ingest/arxiv", "schedule": "0 6 * * *" },
-    { "path": "/api/ingest/semantic-scholar", "schedule": "0 7 * * *" },
-    { "path": "/api/ingest/summarize", "schedule": "0 8 * * *" }
+    { "path": "/api/ingest/semantic-scholar", "schedule": "0 7 * * *" }
   ]
 }
