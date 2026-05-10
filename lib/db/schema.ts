@@ -193,6 +193,28 @@ export const dailyFeeds = pgTable(
 );
 
 // ============================================================
+// COMMENTS
+// ============================================================
+export const comments = pgTable(
+  "comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    paperId: uuid("paper_id")
+      .notNull()
+      .references(() => papers.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_comments_paper_id").on(table.paperId),
+    index("idx_comments_user_id").on(table.userId),
+  ]
+);
+
+// ============================================================
 // STREAKS
 // ============================================================
 export const streaks = pgTable("streaks", {
