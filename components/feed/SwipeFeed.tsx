@@ -5,71 +5,70 @@ import { SwipeCard } from "@/components/feed/SwipeCard";
 import { ParticleBackground } from "@/components/feed/ParticleBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// 30 palettes ordered as a smooth gradient journey — each step is a gentle shift from the last.
-// Flows: warm cream → peach → blush → rose → mauve → lavender → periwinkle → sky →
-// seafoam → sage → olive → moss → deeper greens → teal → deep blue → slate → charcoal →
-// warm dark → amber dark → back toward warm lights. Loops seamlessly.
+// 30 palettes: mostly mid-to-dark tones with a few soft lights for breathing room.
+// Flows gently through warm → rose → violet → blue → teal → green → dark greens →
+// deep blues → warm darks → loops back.
 const THEMES = [
-  // 1. Warm cream
-  { bg: "#F7F5F0", card: "#FFFFFF", text: "#2E2B26", muted: "#7D7A72", border: "#EAE6DE", accent: "#B8865C" },
-  // 2. Soft wheat
-  { bg: "#F5F1E8", card: "#FEFCF7", text: "#33302A", muted: "#8A8070", border: "#E6E0D2", accent: "#C49058" },
-  // 3. Golden linen
-  { bg: "#F3EEE2", card: "#FDFBF5", text: "#362F24", muted: "#8E7E64", border: "#E4DBCA", accent: "#C89450" },
-  // 4. Peach sand
-  { bg: "#F5EDE6", card: "#FFFAF6", text: "#382E28", muted: "#907868", border: "#E8DCD0", accent: "#C88060" },
-  // 5. Warm blush
-  { bg: "#F4ECE8", card: "#FFF9F7", text: "#382A28", muted: "#947470", border: "#E6D6D2", accent: "#C47A72" },
-  // 6. Dusty rose
-  { bg: "#F2EAEB", card: "#FDF7F8", text: "#352828", muted: "#906C6E", border: "#E2D2D4", accent: "#C0707A" },
-  // 7. Soft mauve
-  { bg: "#F0E9ED", card: "#FCF8FA", text: "#332830", muted: "#8A6E80", border: "#DED2DA", accent: "#B07090" },
-  // 8. Lilac mist
-  { bg: "#EEEBF2", card: "#FBF9FD", text: "#2E2835", muted: "#807090", border: "#DCD6E4", accent: "#9B78B8" },
-  // 9. Lavender cloud
-  { bg: "#ECEAF4", card: "#FAF8FF", text: "#2A2838", muted: "#787098", border: "#D8D4E8", accent: "#8878C0" },
-  // 10. Periwinkle
-  { bg: "#EAECF5", card: "#F8FAFF", text: "#282838", muted: "#7078A0", border: "#D4D8EA", accent: "#7080C8" },
-  // 11. Soft sky
-  { bg: "#E8EEF5", card: "#F6FAFF", text: "#252E38", muted: "#6880A0", border: "#D0DAE8", accent: "#5888C0" },
-  // 12. Morning blue
-  { bg: "#E6F0F4", card: "#F5FBFD", text: "#223038", muted: "#6088A0", border: "#CCE0EA", accent: "#4890B8" },
-  // 13. Ocean mist
-  { bg: "#E5F0F2", card: "#F4FBFC", text: "#203235", muted: "#5C8A98", border: "#C8E0E4", accent: "#4098A8" },
-  // 14. Seafoam
-  { bg: "#E5F0EE", card: "#F4FCFA", text: "#1E3430", muted: "#5A8A82", border: "#C8E0DA", accent: "#40A090" },
-  // 15. Mint sage
-  { bg: "#E6F0EA", card: "#F5FBF6", text: "#20352A", muted: "#5C8A70", border: "#CADECE", accent: "#489878" },
-  // 16. Soft sage
-  { bg: "#E8EFE8", card: "#F6FAF6", text: "#243028", muted: "#608A68", border: "#D0DCC8", accent: "#509868" },
-  // 17. Moss green
-  { bg: "#EAEFE6", card: "#F7FAF4", text: "#283025", muted: "#688A5C", border: "#D4DCC4", accent: "#5A9858" },
-  // 18. Olive mist
-  { bg: "#ECEDE4", card: "#F8F9F2", text: "#2C3025", muted: "#707A58", border: "#D8DAC8", accent: "#6A9048" },
-  // 19. Willow
-  { bg: "#EAECE2", card: "#F6F8F0", text: "#2E3224", muted: "#747C52", border: "#D6D8C2", accent: "#788C42" },
-  // 20. Fern dusk
-  { bg: "#E2E6DE", card: "#F0F4EC", text: "#2A3028", muted: "#687860", border: "#CCD4C4", accent: "#6A8850" },
-  // 21. Deep sage
-  { bg: "#D8DED6", card: "#E8EEE4", text: "#262E26", muted: "#5E7258", border: "#C2CCC0", accent: "#5A8048" },
-  // 22. Stone green
-  { bg: "#CED6CE", card: "#E0E8E0", text: "#222C24", muted: "#587058", border: "#B8C4B8", accent: "#508050" },
-  // 23. Twilight moss
-  { bg: "#3A4238", card: "#444E42", text: "#E2E8E0", muted: "#98A892", border: "#525E50", accent: "#78B070" },
-  // 24. Evening teal
-  { bg: "#2C3838", card: "#364444", text: "#E0ECE8", muted: "#88AAA0", border: "#445858", accent: "#60B0A0" },
-  // 25. Deep slate
-  { bg: "#2A3038", card: "#343C44", text: "#E4E8EE", muted: "#8898A8", border: "#424A54", accent: "#6898C0" },
-  // 26. Night blue
-  { bg: "#262C38", card: "#303848", text: "#E4E8F2", muted: "#8890B0", border: "#3C4456", accent: "#7088C8" },
-  // 27. Warm night
-  { bg: "#2C2828", card: "#383434", text: "#EDE8E4", muted: "#A09490", border: "#4A4440", accent: "#C89070" },
-  // 28. Dark clay
-  { bg: "#302A24", card: "#3C3630", text: "#EEE8E0", muted: "#A09480", border: "#4E4438", accent: "#D09858" },
-  // 29. Ember dark
-  { bg: "#322820", card: "#3E342C", text: "#F0E8DC", muted: "#A89478", border: "#504434", accent: "#D8A048" },
-  // 30. Dusk amber
-  { bg: "#342C22", card: "#40382E", text: "#F0EAE0", muted: "#A89880", border: "#524838", accent: "#D0A850" },
+  // 1. Warm sand
+  { bg: "#E8E2D8", card: "#F4F0E8", text: "#2E2A24", muted: "#7A7468", border: "#D6CFC2", accent: "#B88050" },
+  // 2. Soft clay
+  { bg: "#E2D8D0", card: "#F0EAE4", text: "#302824", muted: "#887068", border: "#D0C4BA", accent: "#C07858" },
+  // 3. Dusty blush
+  { bg: "#DED4D2", card: "#ECE6E4", text: "#322828", muted: "#8A6C6A", border: "#CCC2C0", accent: "#B86868" },
+  // 4. Rose dusk
+  { bg: "#D6CCD0", card: "#E8E0E4", text: "#30262C", muted: "#886878", border: "#C4B8BE", accent: "#B06080" },
+  // 5. Mauve shadow
+  { bg: "#C8C0CC", card: "#DCD6E0", text: "#2C2630", muted: "#806880", border: "#B8B0BC", accent: "#A06898" },
+  // 6. Dusk violet
+  { bg: "#B8B0C4", card: "#CEC8D8", text: "#282430", muted: "#786890", border: "#A8A0B4", accent: "#9068B0" },
+  // 7. Muted lavender
+  { bg: "#A8A4B8", card: "#C0BCD0", text: "#242230", muted: "#706888", border: "#9894A8", accent: "#8070B8" },
+  // 8. Twilight indigo
+  { bg: "#484868", card: "#565878", text: "#E4E2F0", muted: "#A0A0C0", border: "#5C5E80", accent: "#9090D0" },
+  // 9. Deep periwinkle
+  { bg: "#3A3C5C", card: "#484A6A", text: "#E2E2F0", muted: "#9898C0", border: "#505270", accent: "#8088D0" },
+  // 10. Night violet
+  { bg: "#302848", card: "#3C3458", text: "#E4E0F2", muted: "#9890B8", border: "#483E64", accent: "#A088D0" },
+  // 11. Deep slate blue
+  { bg: "#283040", card: "#343C4E", text: "#E2E6F0", muted: "#8898B0", border: "#3E4858", accent: "#6890C0" },
+  // 12. Ocean depth
+  { bg: "#223040", card: "#2E3C4E", text: "#E0E8F2", muted: "#80A0B8", border: "#38485A", accent: "#5098C8" },
+  // 13. Deep marine
+  { bg: "#1E2E3A", card: "#2A3A48", text: "#DEE8F0", muted: "#78A0B4", border: "#344858", accent: "#48A0C0" },
+  // 14. Dark teal
+  { bg: "#1E3030", card: "#283C3C", text: "#DEF0EC", muted: "#78B0A4", border: "#345050", accent: "#48B8A8" },
+  // 15. Deep aqua
+  { bg: "#203430", card: "#2C4040", text: "#E0F0EA", muted: "#78B098", border: "#385250", accent: "#48B890" },
+  // 16. Forest pool
+  { bg: "#223828", card: "#2E4434", text: "#E0F0E4", muted: "#78AA84", border: "#3A5240", accent: "#50B870" },
+  // 17. Deep moss
+  { bg: "#283A24", card: "#344830", text: "#E2F0E0", muted: "#80A878", border: "#3E5438", accent: "#58B060" },
+  // 18. Dark fern
+  { bg: "#2E3C22", card: "#3A4A2E", text: "#E4F0DC", muted: "#88A870", border: "#445638", accent: "#68A850" },
+  // 19. Olive night
+  { bg: "#343C24", card: "#404A30", text: "#E6F0DE", muted: "#90A468", border: "#4A5838", accent: "#78A048" },
+  // 20. Shadowed sage
+  { bg: "#505848", card: "#606A56", text: "#E6EEE0", muted: "#A0B490", border: "#687860", accent: "#80C060" },
+  // 21. Stone moss
+  { bg: "#4A5044", card: "#5A6254", text: "#E4EAE0", muted: "#98AA8C", border: "#606A58", accent: "#70B058" },
+  // 22. Twilight green
+  { bg: "#3E4838", card: "#4C5846", text: "#E2EAE0", muted: "#90A888", border: "#566250", accent: "#68A860" },
+  // 23. Dark earth
+  { bg: "#2E2C24", card: "#3C3A30", text: "#EDE8DE", muted: "#A09880", border: "#4A4638", accent: "#C0A050" },
+  // 24. Warm umber
+  { bg: "#322A20", card: "#403828", text: "#F0E8DA", muted: "#A89470", border: "#504430", accent: "#D0A040" },
+  // 25. Ember night
+  { bg: "#342420", card: "#42302A", text: "#F0E4DA", muted: "#A88870", border: "#524038", accent: "#D08848" },
+  // 26. Dark rust
+  { bg: "#38241E", card: "#483228", text: "#F0E2D8", muted: "#A88068", border: "#563E34", accent: "#D07840" },
+  // 27. Burnt sienna
+  { bg: "#3C2420", card: "#4C3430", text: "#F0E0DA", muted: "#A87868", border: "#583C36", accent: "#C86848" },
+  // 28. Deep burgundy
+  { bg: "#382228", card: "#483034", text: "#F0E0E2", muted: "#A87880", border: "#543840", accent: "#C06070" },
+  // 29. Plum shadow
+  { bg: "#382432", card: "#483240", text: "#F0E0EA", muted: "#A87890", border: "#543A4C", accent: "#C06898" },
+  // 30. Muted wine
+  { bg: "#3A2430", card: "#4A3240", text: "#F0E0E8", muted: "#A87888", border: "#543A48", accent: "#C86880" },
 ];
 
 interface FeedPaper {
