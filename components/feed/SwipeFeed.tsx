@@ -81,6 +81,9 @@ interface FeedPaper {
   fullPaperUrl: string;
   authors: { name: string }[];
   field: { name: string; color: string; slug: string } | null;
+  isLiked?: boolean;
+  isSaved?: boolean;
+  likeCount?: number;
 }
 
 export function SwipeFeed() {

@@ -54,17 +54,19 @@ export async function GET(req: NextRequest) {
         .where(inArray(paperAuthors.paperId, paperIds))
     : [];
 
-  const authorsByPaper = new Map<string, string[]>();
+  const authorsByPaper = new Map<string, { name: string; position: number | null }[]>();
   for (const a of allAuthors) {
     const list = authorsByPaper.get(a.paperId) ?? [];
-    list.push(a.name);
+    list.push({ name: a.name, position: a.position });
     authorsByPaper.set(a.paperId, list);
   }
 
   const enriched = results.map((paper) => ({
     ...paper,
     field: fieldMap.get(paper.fieldId!) ?? null,
-    authors: authorsByPaper.get(paper.id) ?? [],
+    authors: (authorsByPaper.get(paper.id) ?? [])
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map((a) => a.name),
   }));
 
   return NextResponse.json({ papers: enriched, total: enriched.length });

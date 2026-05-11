@@ -12,7 +12,7 @@ import {
 import { requireDbUser } from "@/lib/auth/server";
 import { generateDailyFeed } from "@/lib/feed/algorithm";
 import { toCalendarDate } from "@/lib/utils";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -91,6 +91,47 @@ export async function GET() {
       .from(streaks)
       .where(eq(streaks.userId, user.id));
 
+    // Get user's liked and saved states for these papers
+    const userLikes = await db
+      .select({ paperId: interactions.paperId })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, user.id),
+          eq(interactions.type, "liked"),
+          inArray(interactions.paperId, paperIds)
+        )
+      );
+    const likedSet = new Set(userLikes.map((l) => l.paperId));
+
+    const userSaves = await db
+      .select({ paperId: interactions.paperId })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, user.id),
+          eq(interactions.type, "saved"),
+          inArray(interactions.paperId, paperIds)
+        )
+      );
+    const savedSet = new Set(userSaves.map((s) => s.paperId));
+
+    // Get like counts per paper
+    const likeCounts = await db
+      .select({
+        paperId: interactions.paperId,
+        count: sql<number>`count(*)`,
+      })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.type, "liked"),
+          inArray(interactions.paperId, paperIds)
+        )
+      )
+      .groupBy(interactions.paperId);
+    const likeCountMap = new Map(likeCounts.map((l) => [l.paperId, Number(l.count)]));
+
     // Build response ordered by feed position
     const orderedPapers = feedItems
       .map((fi) => {
@@ -104,6 +145,9 @@ export async function GET() {
           authors: paperAuthorList,
           field: fieldMap.get(paper.fieldId!) ?? null,
           isRead: todayReadPaperIds.has(paper.id),
+          isLiked: likedSet.has(paper.id),
+          isSaved: savedSet.has(paper.id),
+          likeCount: likeCountMap.get(paper.id) ?? 0,
         };
       })
       .filter(Boolean);

@@ -12,7 +12,7 @@ export async function generatePaperSummary(
   field: string
 ): Promise<string> {
   const message = await getClient().messages.create({
-    model: "claude-haiku-4-5-20241022",
+    model: "claude-3-5-haiku-20241022",
     max_tokens: 300,
     messages: [
       {

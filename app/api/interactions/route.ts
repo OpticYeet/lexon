@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!["read", "saved", "skipped", "shared"].includes(type)) {
+    if (!["read", "saved", "skipped", "shared", "liked"].includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 

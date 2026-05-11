@@ -4,7 +4,8 @@ import { getEndlessFeed } from "@/lib/feed/algorithm";
 import { toCalendarDate } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { papers, authors, paperAuthors, fields } from "@/lib/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
+import { interactions } from "@/lib/db/schema";
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,6 +49,46 @@ export async function GET(req: NextRequest) {
       authorsByPaper.set(a.paperId, existing);
     }
 
+    // Get user's liked and saved states for these papers
+    const userLikes = await db
+      .select({ paperId: interactions.paperId })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, user.id),
+          eq(interactions.type, "liked"),
+          inArray(interactions.paperId, paperIds)
+        )
+      );
+    const likedSet = new Set(userLikes.map((l) => l.paperId));
+
+    const userSaves = await db
+      .select({ paperId: interactions.paperId })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, user.id),
+          eq(interactions.type, "saved"),
+          inArray(interactions.paperId, paperIds)
+        )
+      );
+    const savedSet = new Set(userSaves.map((s) => s.paperId));
+
+    const likeCounts = await db
+      .select({
+        paperId: interactions.paperId,
+        count: sql<number>`count(*)`,
+      })
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.type, "liked"),
+          inArray(interactions.paperId, paperIds)
+        )
+      )
+      .groupBy(interactions.paperId);
+    const likeCountMap = new Map(likeCounts.map((l) => [l.paperId, Number(l.count)]));
+
     const enrichedPapers = result.papers.map((paper) => {
       const paperAuthorList = (authorsByPaper.get(paper.id) ?? [])
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
@@ -56,6 +97,9 @@ export async function GET(req: NextRequest) {
         ...paper,
         authors: paperAuthorList,
         field: fieldMap.get(paper.fieldId!) ?? null,
+        isLiked: likedSet.has(paper.id),
+        isSaved: savedSet.has(paper.id),
+        likeCount: likeCountMap.get(paper.id) ?? 0,
       };
     });
 

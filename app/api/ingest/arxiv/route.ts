@@ -54,22 +54,20 @@ export async function POST(req: NextRequest) {
             .returning();
 
           if (inserted) {
-            // Insert authors
+            // Insert authors — arXiv has no externalId, so dedup by name
             for (let i = 0; i < paper.authors.length; i++) {
+              // Check if author already exists by name first
               let [author] = await db
-                .insert(authors)
-                .values({ name: paper.authors[i].name })
-                .onConflictDoNothing()
-                .returning();
+                .select()
+                .from(authors)
+                .where(eq(authors.name, paper.authors[i].name))
+                .limit(1);
 
-              // If conflict (author already exists), look them up
               if (!author) {
-                const [existing] = await db
-                  .select()
-                  .from(authors)
-                  .where(eq(authors.name, paper.authors[i].name))
-                  .limit(1);
-                author = existing;
+                [author] = await db
+                  .insert(authors)
+                  .values({ name: paper.authors[i].name })
+                  .returning();
               }
 
               if (author) {

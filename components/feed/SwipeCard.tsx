@@ -25,15 +25,18 @@ interface SwipeCardProps {
     fullPaperUrl: string;
     authors: { name: string }[];
     field: { name: string; color: string; slug: string } | null;
+    isLiked?: boolean;
+    isSaved?: boolean;
+    likeCount?: number;
   };
   isActive: boolean;
   theme: CardTheme;
 }
 
 export function SwipeCard({ paper, isActive, theme }: SwipeCardProps) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [saved, setSaved] = useState(false);
+  const [liked, setLiked] = useState(paper.isLiked ?? false);
+  const [likeCount, setLikeCount] = useState(paper.likeCount ?? 0);
+  const [saved, setSaved] = useState(paper.isSaved ?? false);
   const [showComments, setShowComments] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
   const [saveAnimating, setSaveAnimating] = useState(false);

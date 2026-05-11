@@ -64,31 +64,33 @@ export async function POST(req: NextRequest) {
           if (inserted) {
             for (let i = 0; i < paper.authors.length; i++) {
               const authorExternalId = paper.authors[i].authorId ?? null;
-              let [author] = await db
-                .insert(authors)
-                .values({
-                  name: paper.authors[i].name,
-                  externalId: authorExternalId,
-                })
-                .onConflictDoNothing()
-                .returning();
+              let author;
 
-              // If conflict (author already exists), look them up
-              if (!author) {
-                if (authorExternalId) {
-                  const [existing] = await db
-                    .select()
-                    .from(authors)
-                    .where(eq(authors.externalId, authorExternalId))
-                    .limit(1);
-                  author = existing;
-                } else {
-                  const [existing] = await db
-                    .select()
-                    .from(authors)
-                    .where(eq(authors.name, paper.authors[i].name))
-                    .limit(1);
-                  author = existing;
+              if (authorExternalId) {
+                // S2 authors have externalId — use upsert on the unique constraint
+                [author] = await db
+                  .insert(authors)
+                  .values({
+                    name: paper.authors[i].name,
+                    externalId: authorExternalId,
+                  })
+                  .onConflictDoUpdate({
+                    target: authors.externalId,
+                    set: { name: paper.authors[i].name },
+                  })
+                  .returning();
+              } else {
+                // No externalId — dedup by name
+                [author] = await db
+                  .select()
+                  .from(authors)
+                  .where(eq(authors.name, paper.authors[i].name))
+                  .limit(1);
+                if (!author) {
+                  [author] = await db
+                    .insert(authors)
+                    .values({ name: paper.authors[i].name })
+                    .returning();
                 }
               }
 
