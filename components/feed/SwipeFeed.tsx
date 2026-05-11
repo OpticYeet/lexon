@@ -219,7 +219,7 @@ export function SwipeFeed() {
             key={paper.id}
             paper={paper}
             isActive={index === currentIndex}
-            theme={getThemeForIndex(index)}
+            theme={currentTheme}
           />
         ))}
         {loadingMore && (
