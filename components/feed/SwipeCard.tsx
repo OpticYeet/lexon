@@ -45,6 +45,7 @@ export function SwipeCard({ paper, isActive, theme }: SwipeCardProps) {
       : paper.authors.map((a) => a.name).join(", ");
 
   const handleLike = async () => {
+    const prevLiked = liked;
     const newLiked = !liked;
     setLiked(newLiked);
     setLikeCount((c) => (newLiked ? c + 1 : Math.max(0, c - 1)));
@@ -52,21 +53,33 @@ export function SwipeCard({ paper, isActive, theme }: SwipeCardProps) {
       setLikeAnimating(true);
       setTimeout(() => setLikeAnimating(false), 700);
     }
-    await fetch(`/api/papers/${paper.id}/like`, {
-      method: newLiked ? "POST" : "DELETE",
-    }).catch(() => {});
+    try {
+      const res = await fetch(`/api/papers/${paper.id}/like`, {
+        method: newLiked ? "POST" : "DELETE",
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLiked(prevLiked);
+      setLikeCount((c) => (newLiked ? Math.max(0, c - 1) : c + 1));
+    }
   };
 
   const handleSave = async () => {
+    const prevSaved = saved;
     const newSaved = !saved;
     setSaved(newSaved);
     if (newSaved) {
       setSaveAnimating(true);
       setTimeout(() => setSaveAnimating(false), 500);
     }
-    await fetch(`/api/papers/${paper.id}/save`, {
-      method: newSaved ? "POST" : "DELETE",
-    }).catch(() => {});
+    try {
+      const res = await fetch(`/api/papers/${paper.id}/save`, {
+        method: newSaved ? "POST" : "DELETE",
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setSaved(prevSaved);
+    }
   };
 
   const handleShare = async () => {

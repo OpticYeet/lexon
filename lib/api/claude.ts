@@ -1,14 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic();
+let _anthropic: Anthropic | null = null;
+function getClient() {
+  if (!_anthropic) _anthropic = new Anthropic();
+  return _anthropic;
+}
 
 export async function generatePaperSummary(
   title: string,
   abstract: string,
   field: string
 ): Promise<string> {
-  const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
+  const message = await getClient().messages.create({
+    model: "claude-haiku-4-5-20241022",
     max_tokens: 300,
     messages: [
       {

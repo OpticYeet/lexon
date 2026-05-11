@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
             })
             .where(eq(streaks.userId, user.id));
 
-          // Upsert streak day
+          // Upsert streak day — update count if row already exists
           await db
             .insert(streakDays)
             .values({
@@ -98,7 +98,13 @@ export async function POST(req: NextRequest) {
               papersRead: todayReadCount,
               goalMet: todayReadCount >= (user.dailyGoal ?? 3),
             })
-            .onConflictDoNothing();
+            .onConflictDoUpdate({
+              target: [streakDays.userId, streakDays.date],
+              set: {
+                papersRead: todayReadCount,
+                goalMet: todayReadCount >= (user.dailyGoal ?? 3),
+              },
+            });
         }
 
         return NextResponse.json({

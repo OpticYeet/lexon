@@ -150,7 +150,7 @@ export async function getEndlessFeed({
         isNotNull(papers.abstract),
         excludeIds.length > 0 ? notInArray(papers.id, excludeIds) : undefined,
         cursor
-          ? sql`(${papers.qualityScore}, ${papers.publishedAt}) < (${parseFloat(cursor.split("::")[0])}, ${cursor.split("::")[1]})`
+          ? sql`(COALESCE(${papers.qualityScore}, 0), COALESCE(${papers.publishedAt}, '1970-01-01'::timestamp)) < (${parseFloat(cursor.split("::")[0]) || 0}, ${cursor.split("::")[1] || '1970-01-01T00:00:00.000Z'})`
           : undefined
       )
     )
@@ -161,8 +161,9 @@ export async function getEndlessFeed({
   const hasMore = results.length > limit;
   const page = hasMore ? results.slice(0, limit) : results;
 
-  const nextCursor = hasMore
-    ? `${page[page.length - 1].qualityScore}::${page[page.length - 1].publishedAt?.toISOString()}`
+  const lastPaper = hasMore ? page[page.length - 1] : null;
+  const nextCursor = lastPaper
+    ? `${lastPaper.qualityScore ?? 0}::${lastPaper.publishedAt?.toISOString() ?? '1970-01-01T00:00:00.000Z'}`
     : null;
 
   return { papers: page, nextCursor };

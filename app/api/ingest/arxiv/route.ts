@@ -3,10 +3,19 @@ import { db } from "@/lib/db";
 import { papers, authors, paperAuthors, fields } from "@/lib/db/schema";
 import { fetchArxivPapers, ARXIV_CATEGORIES } from "@/lib/api/arxiv";
 import { eq } from "drizzle-orm";
+import crypto from "crypto";
+
+function verifyCronSecret(secret: string | null): boolean {
+  const expected = process.env.CRON_SECRET;
+  if (!secret || !expected) return false;
+  const a = Buffer.from(secret);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!verifyCronSecret(req.headers.get("x-cron-secret"))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -47,11 +56,21 @@ export async function POST(req: NextRequest) {
           if (inserted) {
             // Insert authors
             for (let i = 0; i < paper.authors.length; i++) {
-              const [author] = await db
+              let [author] = await db
                 .insert(authors)
                 .values({ name: paper.authors[i].name })
                 .onConflictDoNothing()
                 .returning();
+
+              // If conflict (author already exists), look them up
+              if (!author) {
+                const [existing] = await db
+                  .select()
+                  .from(authors)
+                  .where(eq(authors.name, paper.authors[i].name))
+                  .limit(1);
+                author = existing;
+              }
 
               if (author) {
                 await db

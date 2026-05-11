@@ -27,14 +27,17 @@ export function checkAndUpdateStreak(
   // Goal not yet met today
   if (todayReadCount < dailyGoal) {
     return {
-      newState: currentState,
+      newState: {
+        ...currentState,
+        totalPapersRead: currentState.totalPapersRead + 1,
+      },
       streakIncremented: false,
       streakBroken: false,
       milestoneReached: null,
     };
   }
 
-  // Already counted today
+  // Already counted today (streak already incremented)
   if (currentState.lastActiveDate === today) {
     return {
       newState: {

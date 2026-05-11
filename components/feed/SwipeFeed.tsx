@@ -89,6 +89,7 @@ export function SwipeFeed() {
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Cycle through the gradient journey sequentially — loops back after 30
@@ -116,27 +117,33 @@ export function SwipeFeed() {
   }, []);
 
   const loadEndless = useCallback(async (currentCursor: string | null) => {
-    if (loadingMore) return;
+    if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
       const params = new URLSearchParams({ limit: "10" });
       if (currentCursor) params.set("cursor", currentCursor);
       const res = await fetch(`/api/feed/endless?${params}`);
       const data = await res.json();
-      setPapers((prev) => [...prev, ...(data.papers ?? [])]);
-      setCursor(data.nextCursor ?? null);
+      const newPapers = data.papers ?? [];
+      if (newPapers.length === 0) {
+        setHasMore(false);
+      } else {
+        setPapers((prev) => [...prev, ...newPapers]);
+        setCursor(data.nextCursor ?? null);
+        if (!data.nextCursor) setHasMore(false);
+      }
     } catch (error) {
       console.error("Failed to load more:", error);
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore]);
+  }, [loadingMore, hasMore]);
 
   useEffect(() => {
-    if (currentIndex >= papers.length - 3 && !loadingMore && papers.length > 0) {
+    if (currentIndex >= papers.length - 3 && !loadingMore && hasMore && papers.length > 0) {
       loadEndless(cursor);
     }
-  }, [currentIndex, papers.length, cursor, loadEndless, loadingMore]);
+  }, [currentIndex, papers.length, cursor, loadEndless, loadingMore, hasMore]);
 
   useEffect(() => {
     if (papers[currentIndex]) {
