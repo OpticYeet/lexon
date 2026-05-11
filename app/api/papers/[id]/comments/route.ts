@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { comments, users } from "@/lib/db/schema";
+import { comments, users, papers } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/auth/server";
 import { eq, desc } from "drizzle-orm";
 
@@ -51,6 +51,17 @@ export async function POST(
 
     if (content.length > 500) {
       return NextResponse.json({ error: "Comment too long (max 500 chars)" }, { status: 400 });
+    }
+
+    // Verify paper exists before inserting
+    const [paper] = await db
+      .select({ id: papers.id })
+      .from(papers)
+      .where(eq(papers.id, paperId))
+      .limit(1);
+
+    if (!paper) {
+      return NextResponse.json({ error: "Paper not found" }, { status: 404 });
     }
 
     const [comment] = await db

@@ -61,6 +61,9 @@ export function DailyFeed() {
     setDailyPapers((prev) =>
       prev.map((p) => (p.id === paperId ? { ...p, isRead: true } : p))
     );
+    setEndlessPapers((prev) =>
+      prev.map((p) => (p.id === paperId ? { ...p, isRead: true } : p))
+    );
     setProgress((prev) => ({ ...prev, read: prev.read + 1 }));
   }, []);
 
@@ -121,7 +124,9 @@ export function DailyFeed() {
           <FeedDivider />
           <div className="space-y-4">
             {endlessPapers.map((paper) => (
-              <PaperCard key={paper.id} paper={paper} />
+              <div key={paper.id} onClick={() => !paper.isRead && markAsRead(paper.id)}>
+                <PaperCard paper={paper} />
+              </div>
             ))}
           </div>
           {cursor && (

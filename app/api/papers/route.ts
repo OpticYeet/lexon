@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     field: fieldMap.get(paper.fieldId!) ?? null,
     authors: (authorsByPaper.get(paper.id) ?? [])
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-      .map((a) => a.name),
+      .map((a) => ({ name: a.name })),
   }));
 
   return NextResponse.json({ papers: enriched, total: enriched.length });

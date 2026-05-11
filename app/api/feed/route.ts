@@ -67,23 +67,19 @@ export async function GET() {
       authorsByPaper.set(a.paperId, existing);
     }
 
-    // Get today's read count
+    // Get today's reads — filter at SQL level to avoid loading entire history
     const todayReads = await db
-      .select()
+      .select({ paperId: interactions.paperId })
       .from(interactions)
       .where(
         and(
           eq(interactions.userId, user.id),
-          eq(interactions.type, "read")
+          eq(interactions.type, "read"),
+          sql`DATE(${interactions.interactionAt} AT TIME ZONE ${user.timezone ?? "UTC"}) = ${today}`
         )
       );
 
-    // Filter reads to today
-    const todayReadPaperIds = new Set(
-      todayReads
-        .filter((i) => toCalendarDate(i.interactionAt!, user.timezone ?? "UTC") === today)
-        .map((i) => i.paperId)
-    );
+    const todayReadPaperIds = new Set(todayReads.map((i) => i.paperId));
 
     // Get streak
     const [streak] = await db
