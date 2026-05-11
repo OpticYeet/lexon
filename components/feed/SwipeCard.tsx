@@ -82,7 +82,7 @@ export function SwipeCard({ paper, isActive, theme }: SwipeCardProps) {
       <div className="h-screen w-full snap-start snap-always flex items-center justify-center relative px-4 md:px-20">
         {/* Card container */}
         <div
-          className="backdrop-blur-sm rounded-2xl shadow-lg max-w-xl w-full max-h-[80vh] overflow-y-auto p-6 md:p-8 relative transition-all duration-700 ease-in-out"
+          className="backdrop-blur-sm rounded-2xl shadow-lg max-w-xl w-full max-h-[80vh] overflow-y-auto p-6 md:p-8 relative transition-all duration-1000 ease-in-out"
           style={{
             backgroundColor: theme.card,
             borderColor: theme.border,

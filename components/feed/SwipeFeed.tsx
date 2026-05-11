@@ -5,68 +5,71 @@ import { SwipeCard } from "@/components/feed/SwipeCard";
 import { ParticleBackground } from "@/components/feed/ParticleBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// 30 aesthetic, calming color palettes
+// 30 palettes ordered as a smooth gradient journey — each step is a gentle shift from the last.
+// Flows: warm cream → peach → blush → rose → mauve → lavender → periwinkle → sky →
+// seafoam → sage → olive → moss → deeper greens → teal → deep blue → slate → charcoal →
+// warm dark → amber dark → back toward warm lights. Loops seamlessly.
 const THEMES = [
-  // 1. Warm parchment
-  { bg: "#F8F6F1", card: "#FFFFFF", text: "#2C2A25", muted: "#7A776E", border: "#E8E4DC", accent: "#C4775A" },
-  // 2. Twilight navy
-  { bg: "#1E2533", card: "#28303F", text: "#E8ECF2", muted: "#8E9BB0", border: "#3A4456", accent: "#7EB5D6" },
-  // 3. Sage mist
-  { bg: "#EBF0EC", card: "#F8FBF8", text: "#2A3530", muted: "#6B8070", border: "#D4DED6", accent: "#5E9E78" },
-  // 4. Lavender haze
-  { bg: "#F0EDF5", card: "#FDFCFF", text: "#2D2838", muted: "#7E7490", border: "#DDD6E8", accent: "#9B7EC8" },
-  // 5. Deep ocean
-  { bg: "#1A2830", card: "#223340", text: "#E5EEF2", muted: "#88A4B5", border: "#334D5C", accent: "#5DAAC8" },
-  // 6. Blush cream
-  { bg: "#F5EFED", card: "#FFFBFA", text: "#3A2828", muted: "#9A7A78", border: "#E8DAD6", accent: "#C88A80" },
-  // 7. Moss & stone
-  { bg: "#E8EBE4", card: "#F6F8F4", text: "#2B302A", muted: "#6E7A65", border: "#D0D6C8", accent: "#7A9B5A" },
-  // 8. Midnight plum
-  { bg: "#221E2E", card: "#2C2838", text: "#ECE8F2", muted: "#A098B5", border: "#403A50", accent: "#B090D0" },
-  // 9. Sand dune
-  { bg: "#F2EDE5", card: "#FDFBF7", text: "#3A3428", muted: "#8A7E68", border: "#E2DAC8", accent: "#C09860" },
-  // 10. Arctic blue
-  { bg: "#EDF2F5", card: "#F8FBFD", text: "#1E2E38", muted: "#6080A0", border: "#D0DEE8", accent: "#4A90B8" },
-  // 11. Warm charcoal
-  { bg: "#252320", card: "#302D2A", text: "#EDE8E2", muted: "#A09888", border: "#454038", accent: "#D4A070" },
-  // 12. Seafoam
-  { bg: "#E8F2F0", card: "#F5FDFB", text: "#1E3530", muted: "#5E8A80", border: "#C8E0DA", accent: "#4AABA0" },
-  // 13. Dusty rose
-  { bg: "#F2EAEB", card: "#FDF8F8", text: "#382828", muted: "#907070", border: "#E2D4D5", accent: "#C07080" },
-  // 14. Forest night
-  { bg: "#1E2822", card: "#26322A", text: "#E5F0E8", muted: "#8AAA92", border: "#384A3E", accent: "#6EC08A" },
-  // 15. Peach cloud
-  { bg: "#F5F0EB", card: "#FFFCF8", text: "#3A3028", muted: "#908068", border: "#E8DDD0", accent: "#D08860" },
-  // 16. Slate dusk
-  { bg: "#2A2D35", card: "#343840", text: "#E8EAF0", muted: "#929AAA", border: "#464B55", accent: "#88A8D0" },
-  // 17. Pistachio
-  { bg: "#EDF0E8", card: "#F8FAF5", text: "#2A3025", muted: "#687A58", border: "#D6DCC8", accent: "#7AAA5A" },
-  // 18. Mauve twilight
-  { bg: "#2B2530", card: "#352E3A", text: "#F0E8F2", muted: "#A898B0", border: "#4A4055", accent: "#C8A0D8" },
-  // 19. Warm linen
-  { bg: "#F5F2ED", card: "#FEFDFB", text: "#302C25", muted: "#7A7468", border: "#E5E0D8", accent: "#B88050" },
-  // 20. Deep teal
-  { bg: "#1A2C2E", card: "#223838", text: "#E5F2F0", muted: "#80B0AA", border: "#305050", accent: "#50C0B0" },
-  // 21. Cotton candy
-  { bg: "#F2EDF5", card: "#FDFAFF", text: "#302838", muted: "#8A78A0", border: "#E0D6EA", accent: "#A880C8" },
-  // 22. Olive grove
-  { bg: "#EAEBE4", card: "#F6F7F2", text: "#2E3028", muted: "#707560", border: "#D4D6C8", accent: "#8A9A50" },
-  // 23. Night sky
-  { bg: "#1A1E28", card: "#222835", text: "#E8ECF5", muted: "#8898B8", border: "#303848", accent: "#6888C8" },
-  // 24. Vanilla bean
-  { bg: "#F5F2EA", card: "#FFFDF5", text: "#352E22", muted: "#887A60", border: "#E8E0D0", accent: "#C8A050" },
-  // 25. Misty mountain
-  { bg: "#E8ECEE", card: "#F5F8FA", text: "#252E32", muted: "#607078", border: "#CDD6DA", accent: "#5890A0" },
-  // 26. Dark amber
-  { bg: "#252018", card: "#302A20", text: "#F0E8DA", muted: "#A89878", border: "#484030", accent: "#D0A050" },
-  // 27. Periwinkle
-  { bg: "#ECEEF5", card: "#F8FAFF", text: "#252838", muted: "#6A70A0", border: "#D4D8EA", accent: "#6878C0" },
-  // 28. Eucalyptus
-  { bg: "#E5EDE8", card: "#F2FAF5", text: "#1E302A", muted: "#5A8A70", border: "#C8DCD0", accent: "#408868" },
-  // 29. Soft clay
-  { bg: "#F0EAE5", card: "#FBF7F4", text: "#382A25", muted: "#907060", border: "#E0D2C8", accent: "#B87050" },
-  // 30. Cosmic indigo
-  { bg: "#1E1E2E", card: "#282838", text: "#E8E8F5", muted: "#9090B8", border: "#383850", accent: "#8080D0" },
+  // 1. Warm cream
+  { bg: "#F7F5F0", card: "#FFFFFF", text: "#2E2B26", muted: "#7D7A72", border: "#EAE6DE", accent: "#B8865C" },
+  // 2. Soft wheat
+  { bg: "#F5F1E8", card: "#FEFCF7", text: "#33302A", muted: "#8A8070", border: "#E6E0D2", accent: "#C49058" },
+  // 3. Golden linen
+  { bg: "#F3EEE2", card: "#FDFBF5", text: "#362F24", muted: "#8E7E64", border: "#E4DBCA", accent: "#C89450" },
+  // 4. Peach sand
+  { bg: "#F5EDE6", card: "#FFFAF6", text: "#382E28", muted: "#907868", border: "#E8DCD0", accent: "#C88060" },
+  // 5. Warm blush
+  { bg: "#F4ECE8", card: "#FFF9F7", text: "#382A28", muted: "#947470", border: "#E6D6D2", accent: "#C47A72" },
+  // 6. Dusty rose
+  { bg: "#F2EAEB", card: "#FDF7F8", text: "#352828", muted: "#906C6E", border: "#E2D2D4", accent: "#C0707A" },
+  // 7. Soft mauve
+  { bg: "#F0E9ED", card: "#FCF8FA", text: "#332830", muted: "#8A6E80", border: "#DED2DA", accent: "#B07090" },
+  // 8. Lilac mist
+  { bg: "#EEEBF2", card: "#FBF9FD", text: "#2E2835", muted: "#807090", border: "#DCD6E4", accent: "#9B78B8" },
+  // 9. Lavender cloud
+  { bg: "#ECEAF4", card: "#FAF8FF", text: "#2A2838", muted: "#787098", border: "#D8D4E8", accent: "#8878C0" },
+  // 10. Periwinkle
+  { bg: "#EAECF5", card: "#F8FAFF", text: "#282838", muted: "#7078A0", border: "#D4D8EA", accent: "#7080C8" },
+  // 11. Soft sky
+  { bg: "#E8EEF5", card: "#F6FAFF", text: "#252E38", muted: "#6880A0", border: "#D0DAE8", accent: "#5888C0" },
+  // 12. Morning blue
+  { bg: "#E6F0F4", card: "#F5FBFD", text: "#223038", muted: "#6088A0", border: "#CCE0EA", accent: "#4890B8" },
+  // 13. Ocean mist
+  { bg: "#E5F0F2", card: "#F4FBFC", text: "#203235", muted: "#5C8A98", border: "#C8E0E4", accent: "#4098A8" },
+  // 14. Seafoam
+  { bg: "#E5F0EE", card: "#F4FCFA", text: "#1E3430", muted: "#5A8A82", border: "#C8E0DA", accent: "#40A090" },
+  // 15. Mint sage
+  { bg: "#E6F0EA", card: "#F5FBF6", text: "#20352A", muted: "#5C8A70", border: "#CADECE", accent: "#489878" },
+  // 16. Soft sage
+  { bg: "#E8EFE8", card: "#F6FAF6", text: "#243028", muted: "#608A68", border: "#D0DCC8", accent: "#509868" },
+  // 17. Moss green
+  { bg: "#EAEFE6", card: "#F7FAF4", text: "#283025", muted: "#688A5C", border: "#D4DCC4", accent: "#5A9858" },
+  // 18. Olive mist
+  { bg: "#ECEDE4", card: "#F8F9F2", text: "#2C3025", muted: "#707A58", border: "#D8DAC8", accent: "#6A9048" },
+  // 19. Willow
+  { bg: "#EAECE2", card: "#F6F8F0", text: "#2E3224", muted: "#747C52", border: "#D6D8C2", accent: "#788C42" },
+  // 20. Fern dusk
+  { bg: "#E2E6DE", card: "#F0F4EC", text: "#2A3028", muted: "#687860", border: "#CCD4C4", accent: "#6A8850" },
+  // 21. Deep sage
+  { bg: "#D8DED6", card: "#E8EEE4", text: "#262E26", muted: "#5E7258", border: "#C2CCC0", accent: "#5A8048" },
+  // 22. Stone green
+  { bg: "#CED6CE", card: "#E0E8E0", text: "#222C24", muted: "#587058", border: "#B8C4B8", accent: "#508050" },
+  // 23. Twilight moss
+  { bg: "#3A4238", card: "#444E42", text: "#E2E8E0", muted: "#98A892", border: "#525E50", accent: "#78B070" },
+  // 24. Evening teal
+  { bg: "#2C3838", card: "#364444", text: "#E0ECE8", muted: "#88AAA0", border: "#445858", accent: "#60B0A0" },
+  // 25. Deep slate
+  { bg: "#2A3038", card: "#343C44", text: "#E4E8EE", muted: "#8898A8", border: "#424A54", accent: "#6898C0" },
+  // 26. Night blue
+  { bg: "#262C38", card: "#303848", text: "#E4E8F2", muted: "#8890B0", border: "#3C4456", accent: "#7088C8" },
+  // 27. Warm night
+  { bg: "#2C2828", card: "#383434", text: "#EDE8E4", muted: "#A09490", border: "#4A4440", accent: "#C89070" },
+  // 28. Dark clay
+  { bg: "#302A24", card: "#3C3630", text: "#EEE8E0", muted: "#A09480", border: "#4E4438", accent: "#D09858" },
+  // 29. Ember dark
+  { bg: "#322820", card: "#3E342C", text: "#F0E8DC", muted: "#A89478", border: "#504434", accent: "#D8A048" },
+  // 30. Dusk amber
+  { bg: "#342C22", card: "#40382E", text: "#F0EAE0", muted: "#A89880", border: "#524838", accent: "#D0A850" },
 ];
 
 interface FeedPaper {
@@ -89,31 +92,8 @@ export function SwipeFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Build an infinite theme sequence: every 30 papers, reshuffle the palette
-  const themeSequenceRef = useRef<typeof THEMES[number][]>([]);
-
-  const getThemeForIndex = useCallback((index: number) => {
-    // Extend the sequence if needed
-    while (themeSequenceRef.current.length <= index) {
-      const shuffled = [...THEMES];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      // Ensure no repeat at the boundary with previous batch
-      if (themeSequenceRef.current.length > 0) {
-        const lastTheme = themeSequenceRef.current[themeSequenceRef.current.length - 1];
-        if (shuffled[0] === lastTheme) {
-          const swapIdx = 1 + Math.floor(Math.random() * (shuffled.length - 1));
-          [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
-        }
-      }
-      themeSequenceRef.current.push(...shuffled);
-    }
-    return themeSequenceRef.current[index];
-  }, []);
-
-  const currentTheme = useMemo(() => getThemeForIndex(currentIndex), [currentIndex, getThemeForIndex]);
+  // Cycle through the gradient journey sequentially — loops back after 30
+  const currentTheme = useMemo(() => THEMES[currentIndex % THEMES.length], [currentIndex]);
 
   useEffect(() => {
     async function load() {
@@ -205,7 +185,7 @@ export function SwipeFeed() {
 
   return (
     <div
-      className="fixed inset-0 transition-colors duration-700 ease-in-out"
+      className="fixed inset-0 transition-colors duration-1000 ease-in-out"
       style={{ backgroundColor: currentTheme.bg }}
     >
       <ParticleBackground theme={currentTheme} />
