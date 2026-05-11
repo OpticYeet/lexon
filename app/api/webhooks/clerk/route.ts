@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { users, streaks } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -59,6 +60,14 @@ export async function POST(req: Request) {
 
     if (newUser) {
       await db.insert(streaks).values({ userId: newUser.id });
+    }
+  }
+
+  if (evt.type === "user.deleted") {
+    const { id } = evt.data;
+    if (id) {
+      // ON DELETE CASCADE in schema handles all related data
+      await db.delete(users).where(eq(users.clerkUserId, id));
     }
   }
 

@@ -73,16 +73,29 @@ export async function generateDailyFeed({ userId, dailyGoal, today }: FeedOption
 
   scored.sort((a, b) => b.score - a.score);
 
-  // Pick papers with max 2 per field
+  // Pick papers with field diversity — cap scales with goal and number of fields
+  const uniqueFieldCount = new Set(scored.map((p) => p.fieldId)).size;
+  const maxPerField = Math.max(2, Math.ceil(dailyGoal / Math.max(uniqueFieldCount, 1)));
+
   const selected: typeof candidates = [];
   const fieldCounts = new Map<number, number>();
 
   for (const paper of scored) {
     if (selected.length >= dailyGoal) break;
     const fieldCount = fieldCounts.get(paper.fieldId!) ?? 0;
-    if (fieldCount >= 2) continue;
+    if (fieldCount >= maxPerField) continue;
     selected.push(paper);
     fieldCounts.set(paper.fieldId!, fieldCount + 1);
+  }
+
+  // If diversity cap prevented filling the goal, do a second pass ignoring the cap
+  if (selected.length < dailyGoal) {
+    const selectedIds = new Set(selected.map((p) => p.id));
+    for (const paper of scored) {
+      if (selected.length >= dailyGoal) break;
+      if (selectedIds.has(paper.id)) continue;
+      selected.push(paper);
+    }
   }
 
   // Insert into daily_feeds

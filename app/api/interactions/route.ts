@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { interactions, streaks, streakDays } from "@/lib/db/schema";
+import { interactions, streaks, streakDays, papers } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/auth/server";
 import { toCalendarDate } from "@/lib/utils";
 import { checkAndUpdateStreak, StreakState } from "@/lib/streak/engine";
@@ -21,6 +21,17 @@ export async function POST(req: NextRequest) {
 
     if (!["read", "saved", "skipped", "shared", "liked"].includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    }
+
+    // Verify paper exists
+    const [paper] = await db
+      .select({ id: papers.id })
+      .from(papers)
+      .where(eq(papers.id, paperId))
+      .limit(1);
+
+    if (!paper) {
+      return NextResponse.json({ error: "Paper not found" }, { status: 404 });
     }
 
     // Upsert interaction

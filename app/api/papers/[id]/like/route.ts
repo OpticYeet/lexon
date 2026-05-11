@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { interactions } from "@/lib/db/schema";
+import { interactions, papers } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/auth/server";
 import { and, eq, sql } from "drizzle-orm";
 
@@ -11,6 +11,16 @@ export async function POST(
   try {
     const user = await requireDbUser();
     const { id: paperId } = await params;
+
+    const [paper] = await db
+      .select({ id: papers.id })
+      .from(papers)
+      .where(eq(papers.id, paperId))
+      .limit(1);
+
+    if (!paper) {
+      return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+    }
 
     await db
       .insert(interactions)
